@@ -1,3 +1,5 @@
+# U2hpemVrdV9Mb2FkZXJfU2FmZXR5XzQyMA==
+
 import os,time,sys,random,string,subprocess,tty,termios,select,types
 
 def _run(cmd):
