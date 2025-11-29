@@ -1,0 +1,24 @@
+# HOW TO USE
+
+import shizuku_api
+
+code = """
+echo ADB Test
+echo Second line test
+"""
+
+shizuku_api.run(code)
+
+# Single line example
+shizuku_api.run("echo one line ADB Test")
+
+# Another multi-line example
+shizuku_api.run("""
+echo multiple line ADB Test two
+echo another line
+""")
+
+# Import run method two
+# Supports multiple line code
+from shizuku_api import run
+run("echo run import ADB TEST")
