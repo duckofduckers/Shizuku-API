@@ -17,23 +17,51 @@ run = shizuku_api.run
     with open(os.path.join(package_path, "__init__.py"), "w") as f:
         f.write(init_code)
     
-    loader_code = """import urllib.request as u
-import ssl
-import types
-import sys
+    loader_code = """import sys, types, os, time, random, string, subprocess, tty, termios, select
 
-base64_marker = b"U2hpemVrdV9Mb2FkZXJfU2FmZXR5XzQyMA=="
+def _run(cmd):
+    c="/storage/emulated/0/Android/data/org.qpython.qpy/files/cache"
+    os.makedirs(c,exist_ok=True)
+    f=os.path.join(c,"tmp_"+''.join(random.choices(string.ascii_lowercase+string.digits,k=8))+".sh")
+    with open(f,"w") as x:x.write(cmd)
+    old=termios.tcgetattr(sys.stdin)
+    tty.setraw(sys.stdin.fileno())
+    m,s=os.openpty()
+    p=subprocess.Popen(f'rish -c "sh {f}"',shell=True,stdin=s,stdout=s,stderr=s,close_fds=True)
+    os.close(s)
+    try:
+        while True:
+            r,_,_=select.select([sys.stdin,m],[],[])
+            if sys.stdin in r:
+                d=os.read(sys.stdin.fileno(),1024)
+                if d: os.write(m,d)
+            if m in r:
+                try: o=os.read(m,1024)
+                except OSError: break
+                if o: sys.stdout.write(o.decode(errors="replace")); sys.stdout.flush()
+                else: break
+    finally:
+        termios.tcsetattr(sys.stdin,termios.TCSADRAIN,old)
+    while os.path.exists(f):
+        try: os.remove(f)
+        except: pass
+        time.sleep(0.05)
 
-def load_shizuku_api():
-    url = "https://raw.githubusercontent.com/duckofduckers/Shizuku-API/refs/heads/main/Shizuku%20API%20-%20Source"
-    data = u.urlopen(url, context=ssl._create_unverified_context()).read()
-    assert base64_marker in data
-    code = data.decode()
-    module = types.ModuleType("shizuku_api")
-    exec(code, module.__dict__)
-    module.run = module._run
-    sys.modules["shizuku_api"] = module
-    return module
+def _build_shizuku_module():
+    m=types.ModuleType("shizuku_api")
+    m._run=_run
+    m.run=_run
+    return m
+
+def _build_loader_module():
+    loader=types.ModuleType("shizuku_api.loader")
+    def load_shizuku_api():
+        return _build_shizuku_module()
+    loader.load_shizuku_api=load_shizuku_api
+    return loader
+
+sys.modules["shizuku_api"]=_build_shizuku_module()
+sys.modules["shizuku_api.loader"]=_build_loader_module()
 """
     with open(os.path.join(package_path, "loader.py"), "w") as f:
         f.write(loader_code)
