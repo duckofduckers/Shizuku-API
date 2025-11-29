@@ -11,6 +11,8 @@ def main():
 
 shizuku_api = load_shizuku_api()
 run = shizuku_api.run
+
+# SOURCE
 """
     with open(os.path.join(package_path, "__init__.py"), "w") as f:
         f.write(init_code)
