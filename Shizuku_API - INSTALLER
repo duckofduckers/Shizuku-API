@@ -22,10 +22,13 @@ import ssl
 import types
 import sys
 
+base64_marker = b"U2hpemVrdV9Mb2FkZXJfU2FmZXR5XzQyMA=="
+
 def load_shizuku_api():
     url = "https://raw.githubusercontent.com/duckofduckers/Shizuku-API/refs/heads/main/Shizuku%20API%20-%20Source"
-    code = u.urlopen(url, context=ssl._create_unverified_context()).read().decode()
-    
+    data = u.urlopen(url, context=ssl._create_unverified_context()).read()
+    assert base64_marker in data
+    code = data.decode()
     module = types.ModuleType("shizuku_api")
     exec(code, module.__dict__)
     module.run = module._run
