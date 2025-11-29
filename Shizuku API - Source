@@ -1,0 +1,35 @@
+import os,time,sys,random,string,subprocess,tty,termios,select,types
+
+def _run(cmd):
+    """
+    Run multi-line shell commands via Shizuku using a temp .sh and PTY
+    """
+    c="/storage/emulated/0/Android/data/org.qpython.qpy/files/cache"
+    os.makedirs(c,exist_ok=True)
+    f=os.path.join(c,"tmp_"+''.join(random.choices(string.ascii_lowercase+string.digits,k=8))+".sh")
+    with open(f,"w") as x:x.write(cmd)
+    old=termios.tcgetattr(sys.stdin)
+    tty.setraw(sys.stdin.fileno())
+    m,s=os.openpty()
+    p=subprocess.Popen(f'rish -c "sh {f}"',shell=True,stdin=s,stdout=s,stderr=s,close_fds=True)
+    os.close(s)
+    try:
+        while True:
+            r,_,_=select.select([sys.stdin,m],[],[])
+            if sys.stdin in r:
+                d=os.read(sys.stdin.fileno(),1024)
+                if d: os.write(m,d)
+            if m in r:
+                try: o=os.read(m,1024)
+                except OSError: break
+                if o: sys.stdout.write(o.decode(errors="replace")); sys.stdout.flush()
+                else: break
+    finally: termios.tcsetattr(sys.stdin,termios.TCSADRAIN,old)
+    while os.path.exists(f):
+        try: os.remove(f)
+        except: pass
+        time.sleep(0.05)
+
+shizuku_api=types.ModuleType("shizuku_api")
+shizuku_api.run=_run
+sys.modules["shizuku_api"]=shizuku_api
