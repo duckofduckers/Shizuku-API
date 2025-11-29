@@ -1,0 +1,94 @@
+import os
+import sys
+
+def main():
+    base_path = "/storage/emulated/0/Android/data/org.qpython.qpy/files/lib/python3.12/site-packages"
+    package_path = os.path.join(base_path, "shizuku_api")
+    
+    os.makedirs(package_path, exist_ok=True)
+    
+    init_code = """from .loader import load_shizuku_api
+
+shizuku_api = load_shizuku_api()
+run = shizuku_api.run
+"""
+    with open(os.path.join(package_path, "__init__.py"), "w") as f:
+        f.write(init_code)
+    
+    loader_code = """import urllib.request as u
+import ssl
+import types
+import sys
+
+def load_shizuku_api():
+    url = "https://gist.githubusercontent.com/duckofduckers/361cd9e958369216bbf61934f1b76f4d/raw/7c6e2383f31d13a79bc288ef836757a51d34e000/gistfile1.txt"
+    code = u.urlopen(url, context=ssl._create_unverified_context()).read().decode()
+    
+    module = types.ModuleType("shizuku_api")
+    exec(code, module.__dict__)
+    module.run = module._run
+    sys.modules["shizuku_api"] = module
+    return module
+"""
+    with open(os.path.join(package_path, "loader.py"), "w") as f:
+        f.write(loader_code)
+    
+    readme_code = """import shizuku_api
+
+code = \"\"\"
+echo ADB Test
+echo Second line test
+\"\"\"
+
+shizuku_api.run(code)
+
+# Single line example
+shizuku_api.run("echo one line ADB Test")
+
+# Another multi-line example
+shizuku_api.run(\"\"\"
+echo multiple line ADB Test two
+echo another line
+\"\"\")
+
+# Import run method two
+# Supports multiple line code
+from shizuku_api import run
+run("echo run import ADB TEST")
+"""
+    with open(os.path.join(package_path, "README_Shizuku_API.txt"), "w") as f:
+        f.write(readme_code)
+
+    license_code = """MIT License
+
+Copyright (c) 2025 Duck
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Note: This project uses Shizuku to function, which is licensed under Apache 2.0
+(https://github.com/RikkaApps/Shizuku). Please comply with their license when
+distributing or using their code.
+"""
+    with open(os.path.join(package_path, "license.txt"), "w") as f:
+        f.write(license_code)
+    
+    print(f"shizuku_api installed successfully in {package_path}")
+
+if __name__ == "__main__":
+    main()
