@@ -21,7 +21,7 @@ import types
 import sys
 
 def load_shizuku_api():
-    url = "https://gist.githubusercontent.com/duckofduckers/361cd9e958369216bbf61934f1b76f4d/raw/7c6e2383f31d13a79bc288ef836757a51d34e000/gistfile1.txt"
+    url = "https://raw.githubusercontent.com/duckofduckers/Shizuku-API/refs/heads/main/Shizuku%20API%20-%20Source"
     code = u.urlopen(url, context=ssl._create_unverified_context()).read().decode()
     
     module = types.ModuleType("shizuku_api")
